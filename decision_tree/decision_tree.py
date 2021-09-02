@@ -6,10 +6,10 @@ import pandas as pd
 
 class DecisionTree:
     
-    def __init__():
+    def __init__(self):
         # NOTE: Feel free add any hyperparameters 
         # (with defaults) as you see fit
-        pass
+        self.root = {}
     
     def fit(self, X, y):
         """
@@ -22,8 +22,19 @@ class DecisionTree:
             y (pd.Series): a vector of discrete ground-truth labels
         """
         # TODO: Implement 
-        raise NotImplementedError()
-    
+
+        A = ""
+        val = 0
+        split = None
+
+        p = y.value_counts()[1]
+        n = y.value_counts()[0]
+
+
+
+
+
+
     def predict(self, X):
         """
         Generates predictions
@@ -39,7 +50,7 @@ class DecisionTree:
             A length m vector with predictions
         """
         # TODO: Implement 
-        raise NotImplementedError()
+        #raise NotImplementedError()
     
     def get_rules(self):
         """
