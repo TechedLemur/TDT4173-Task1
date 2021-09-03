@@ -38,18 +38,18 @@ class DecisionTree:
 
         self.root = self.recursive_fit(data, attributes)
 
-    def recursive_fit(self, data, attributes, parent_examples=None):
+    def recursive_fit(self, data, attributes, parent_data=None):
         if data.empty:
-            mode = parent_examples[self.GOAL_ATTRIBUTE].mode()
-            node = {"value": random.choice(mode)}
-
-            return node
+            return self.plurality_value(parent_data)
 
         # Entropy is 0, we only have one type of goal attributes
         if (data[self.GOAL_ATTRIBUTE].value_counts().count() == 1):
             node = {"value": data[self.GOAL_ATTRIBUTE].value_counts().index[
                 0]}
             return node
+
+        if not attributes:
+            return self.plurality_value(data)
 
         A = ""
         val = 0.
@@ -76,6 +76,10 @@ class DecisionTree:
             child = self.recursive_fit(exs, attributes.copy(), data)
             node[v] = child
         return node
+
+    def plurality_value(self, data):
+        mode = data[self.GOAL_ATTRIBUTE].mode()
+        return {"value": random.choice(mode)}
 
     def predict(self, X):
         """
