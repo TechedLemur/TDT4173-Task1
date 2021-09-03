@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import random
 # IMPORTANT: DO NOT USE ANY OTHER 3RD PARTY PACKAGES
 # (math, random, collections, functools, etc. are perfectly fine)
 
@@ -23,21 +24,32 @@ class DecisionTree:
         """
         # TODO: Implement
 
-        attributes = X.columns
-        GOAL_ATTRIBUTE = y.name
-
-        # Number of values for the goal attribute
-        S = np.sum(y.value_counts().values)
-
-        if (y.value_counts().count() == 1):  # Entropy is 0, we only have one type of goal attributes
-            self.root["label"] = y.value_counts().values()[0]
-            return
-
-        # The entropy of all the examples
-        dataset_entropy = entropy(y.value_counts().values)
-
         # Make a single dataframe, as it is easy to use Pandas functions on this to get the desired values
         data = X.join(y)
+        attributes = X.columns.tolist()
+        self.GOAL_ATTRIBUTE = y.name
+
+        self.X = X
+        #  The entropy of all the examples
+        self.DATASET_ENTROPY = entropy(y.value_counts().values)
+
+        # Number of values for the goal attribute
+        self.S = np.sum(y.value_counts().values)
+
+        self.root = self.recursive_fit(data, attributes)
+
+    def recursive_fit(self, data, attributes, parent_examples=None):
+        if data.empty:
+            mode = parent_examples[self.GOAL_ATTRIBUTE].mode()
+            node = {"value": random.choice(mode)}
+
+            return node
+
+        # Entropy is 0, we only have one type of goal attributes
+        if (data[self.GOAL_ATTRIBUTE].value_counts().count() == 1):
+            node = {"value": data[self.GOAL_ATTRIBUTE].value_counts().index[
+                0]}
+            return node
 
         A = ""
         val = 0.
@@ -45,16 +57,25 @@ class DecisionTree:
         for a in attributes:
 
             grouped = data.groupby(a)[
-                GOAL_ATTRIBUTE].value_counts().unstack(fill_value=0).stack()  # group data and fill in 0 if needed
+                self.GOAL_ATTRIBUTE].value_counts().unstack(fill_value=0).stack()  # group data and fill in 0 if needed
 
-            gain = dataset_entropy
-            for sv in X[a].unique():
-                gain -= float(np.sum(grouped[sv])) / S * \
+            gain = self.DATASET_ENTROPY
+            for sv in data[a].unique():
+                gain -= float(np.sum(grouped[sv])) / self.S * \
                     entropy(grouped[sv].values)
 
             if gain >= val:
                 A = a
                 val = gain
+        attributes.remove(A)
+        node = {}
+        node["label"] = A
+
+        for v in self.X[A].unique():
+            exs = data[data[A] == v]
+            child = self.recursive_fit(exs, attributes.copy(), data)
+            node[v] = child
+        return node
 
     def predict(self, X):
         """
@@ -71,7 +92,20 @@ class DecisionTree:
             A length m vector with predictions
         """
         # TODO: Implement
-        #raise NotImplementedError()
+
+        predictions = []
+        for index, row in X.iterrows():
+            node = self.root
+            finished = False
+            while not finished:
+                if "value" in node:
+                    predictions.append(node["value"])
+                    finished = True
+                else:
+                    attribute = row[node["label"]]
+                    node = node[attribute]
+
+        return np.array(predictions)
 
     def get_rules(self):
         """
