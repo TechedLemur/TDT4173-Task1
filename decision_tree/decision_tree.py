@@ -7,10 +7,11 @@ import random
 
 class DecisionTree:
 
-    def __init__(self):
+    def __init__(self, irrelevant_attributes=[]):
         # NOTE: Feel free add any hyperparameters
         # (with defaults) as you see fit
         self.root = {}
+        self.irrelevant_attributes = irrelevant_attributes
 
     def fit(self, X, y):
         """
@@ -22,10 +23,11 @@ class DecisionTree:
                 to the features.
             y (pd.Series): a vector of discrete ground-truth labels
         """
-        # TODO: Implement
 
+        X = X.drop(columns=self.irrelevant_attributes)
         # Make a single dataframe, as it is easy to use Pandas functions on this to get the desired values
         data = X.join(y)
+
         attributes = X.columns.tolist()
         self.GOAL_ATTRIBUTE = y.name
 
@@ -95,7 +97,6 @@ class DecisionTree:
         Returns:
             A length m vector with predictions
         """
-        # TODO: Implement
 
         predictions = []
         for index, row in X.iterrows():
