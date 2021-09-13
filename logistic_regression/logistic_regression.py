@@ -24,12 +24,13 @@ class LogisticRegression:
         """
         # TODO: Implement
         o = np.ones((len(X), 1))
-        X["Bias"] = o # add bias
+        x = X.copy(deep=True) # Make a deep copy of X
+        x["Bias"] = o # add bias
 
-        weights = np.ones(X.shape[1]) # initialize weights
+        weights = np.ones(x.shape[1]) # initialize weights
 
         for i in range(self.iterations):
-            for index, x_i in X.iterrows():
+            for index, x_i in x.iterrows():
                 weights = weights + (y[index] - sigmoid(weights @ x_i)) * x_i # update weights with gradiant ascent
 
         self.weights = weights # store weights in the class
@@ -48,8 +49,12 @@ class LogisticRegression:
             A length m array of floats in the range [0, 1]
             with probability-like predictions
         """
+        
+        o = np.ones((len(X), 1))
 
-        return sigmoid(X @ self.weights)
+        x = np.hstack((X, o)) # Add bias
+
+        return sigmoid(x @ self.weights)
 
 
 # --- Some utility functions
