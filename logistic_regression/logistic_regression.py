@@ -22,7 +22,7 @@ class LogisticRegression:
             y (array<m>): a vector of floats containing 
                 m binary 0.0/1.0 labels
         """
-        # TODO: Implement
+        print("Training model, this might take a while...")
         o = np.ones((len(X), 1))
         x = X.copy(deep=True) # Make a deep copy of X
         x["Bias"] = o # add bias
@@ -34,7 +34,7 @@ class LogisticRegression:
                 weights = weights + (y[index] - sigmoid(weights @ x_i)) * x_i # update weights with gradiant ascent
 
         self.weights = weights # store weights in the class
-
+        print("Finished training")
     def predict(self, X):
         """
         Generates predictions
