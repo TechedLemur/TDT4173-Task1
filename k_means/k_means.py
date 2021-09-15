@@ -20,6 +20,7 @@ class KMeans:
             X (array<m,n>): a matrix of floats with
                 m rows (#samples) and n columns (#features)
         """
+        print("Training model, this might take some time...")
         indices = np.arange(len(X))
         # Pick k starting centroids
         centroids = []
