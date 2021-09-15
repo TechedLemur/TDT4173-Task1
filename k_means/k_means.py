@@ -20,7 +20,13 @@ class KMeans:
             X (array<m,n>): a matrix of floats with
                 m rows (#samples) and n columns (#features)
         """
-        centroids = np.random.rand(self.k, len(X.columns))
+        indices = np.arange(len(X))
+        # Pick k starting centroids
+        centroids = []
+        for _ in range(self.k):
+            i = np.random.choice(indices, replace=False)  # pick a random index
+            centroids.append(X.to_numpy()[i])
+        centroids = np.array(centroids)
 
         r = np.zeros((X.shape[0], self.k))
 
@@ -38,9 +44,10 @@ class KMeans:
 
             denominator = np.sum(r, axis=0)
             for k in range(self.k):
+
                 rx = np.tile(r[:, k], (len(X.columns), 1)).T * X
                 sum_rx = np.sum(rx, axis=0)
-                centroids[k] = sum_rx / denominator
+                centroids[k] = sum_rx / denominator[k]
 
         self.centroids = centroids
 
