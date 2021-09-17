@@ -6,7 +6,7 @@ import pandas as pd
 
 class LogisticRegression:
 
-    def __init__(self, alpha=0.01, iterations=100):
+    def __init__(self, alpha=0.1, iterations=200):
         # NOTE: Feel free add any hyperparameters
         # (with defaults) as you see fit
         self.alpha = alpha
@@ -24,17 +24,20 @@ class LogisticRegression:
         """
         print("Training model, this might take a while...")
         o = np.ones((len(X), 1))
-        x = X.copy(deep=True) # Make a deep copy of X
-        x["Bias"] = o # add bias
+        x = X.copy(deep=True)  # Make a deep copy of X
+        x["Bias"] = o  # add bias
 
-        weights = np.ones(x.shape[1]) # initialize weights
+        weights = np.ones(x.shape[1])  # initialize weights
 
         for i in range(self.iterations):
             for index, x_i in x.iterrows():
-                weights = weights + (y[index] - sigmoid(weights @ x_i)) * x_i # update weights with gradiant ascent
+                # update weights with gradient ascent
+                weights = weights + self.alpha * \
+                    (y[index] - sigmoid(weights @ x_i)) * x_i
 
-        self.weights = weights # store weights in the class
+        self.weights = weights  # store weights in the class
         print("Finished training")
+
     def predict(self, X):
         """
         Generates predictions
@@ -49,10 +52,10 @@ class LogisticRegression:
             A length m array of floats in the range [0, 1]
             with probability-like predictions
         """
-        
+
         o = np.ones((len(X), 1))
 
-        x = np.hstack((X, o)) # Add bias
+        x = np.hstack((X, o))  # Add bias
 
         return sigmoid(x @ self.weights)
 
