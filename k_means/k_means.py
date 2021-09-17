@@ -25,7 +25,7 @@ class KMeans:
         models = []
         scores = []
 
-        for l in range(1,11):
+        for l in range(1, 11):
             indices = np.arange(len(X))
             # Pick k starting centroids with the maximin principle. Max the minimum distance between inital centroids.
             centroids = [X.to_numpy()[np.random.randint(0, len(X))]]
@@ -45,7 +45,7 @@ class KMeans:
             r = np.zeros((X.shape[0], self.k))
 
             for _ in range(self.iterations):
-                for i, x in X.iterrows():
+                for i, x in X.iterrows():  # Assign datapoints to clusters
                     argmin = 0
                     dist = np.inf
                     for k in range(self.k):
@@ -57,16 +57,17 @@ class KMeans:
                     r[i][argmin] = 1
 
                 denominator = np.sum(r, axis=0)
-                for k in range(self.k):
+                for k in range(self.k):  # Update centroids
 
                     rx = np.tile(r[:, k], (len(X.columns), 1)).T * X
                     sum_rx = np.sum(rx, axis=0)
                     centroids[k] = sum_rx / denominator[k]
 
             models.append(centroids)
-            scores.append(euclidean_distortion(X, self.predict(X, centroids=centroids)))
+            scores.append(euclidean_distortion(
+                X, self.predict(X, centroids=centroids)))
             print(f"{l} iterations done, {10-l} remaining")
-        
+
         print("Training done, selecting best centroids")
         self.centroids = models[np.argmin(np.array(scores))]
 
@@ -91,7 +92,7 @@ class KMeans:
         else:
             c = self.centroids
         result = []
-        for i, x in X.iterrows():
+        for i, x in X.iterrows():  # Assign samples to neareast cluster
             argmin = 0
             dist = np.inf
             for k in range(self.k):
