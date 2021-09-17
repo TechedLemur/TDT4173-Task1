@@ -21,38 +21,56 @@ class KMeans:
                 m rows (#samples) and n columns (#features)
         """
         print("Training model, this might take some time...")
-        indices = np.arange(len(X))
-        # Pick k starting centroids
-        centroids = []
-        for _ in range(self.k):
-            i = np.random.choice(indices, replace=False)  # pick a random index
-            centroids.append(X.to_numpy()[i])
-        centroids = np.array(centroids)
 
-        r = np.zeros((X.shape[0], self.k))
+        models = []
+        scores = []
 
-        for _ in range(self.iterations):
-            for i, x in X.iterrows():
-                argmin = 0
-                dist = np.inf
+        for l in range(1,11):
+            indices = np.arange(len(X))
+            # Pick k starting centroids with the maximin principle. Max the minimum distance between inital centroids.
+            centroids = [X.to_numpy()[np.random.randint(0, len(X))]]
+
+            for _ in range(self.k - 1):
+                distances = np.zeros(len(X))
+                for i, x in X.iterrows():
+                    dist = np.inf
+                    # Calculate minimum distance between point x and each centroid
+                    for c in centroids:
+                        distance = euclidean_distance(x, c)
+                        dist = min(dist, distance)
+                    distances[i] = dist
+                # Add the furtest point as a new centroid
+                centroids.append(X.to_numpy()[np.argmax(distances)])
+            centroids = np.array(centroids)
+            r = np.zeros((X.shape[0], self.k))
+
+            for _ in range(self.iterations):
+                for i, x in X.iterrows():
+                    argmin = 0
+                    dist = np.inf
+                    for k in range(self.k):
+                        distance = euclidean_distance(x, centroids[k])
+                        if distance < dist:
+                            argmin = k
+                            dist = distance
+                    r[i] = 0
+                    r[i][argmin] = 1
+
+                denominator = np.sum(r, axis=0)
                 for k in range(self.k):
-                    distance = euclidean_distance(x, centroids[k])
-                    if distance < dist:
-                        argmin = k
-                        dist = distance
-                r[i] = 0
-                r[i][argmin] = 1
 
-            denominator = np.sum(r, axis=0)
-            for k in range(self.k):
+                    rx = np.tile(r[:, k], (len(X.columns), 1)).T * X
+                    sum_rx = np.sum(rx, axis=0)
+                    centroids[k] = sum_rx / denominator[k]
 
-                rx = np.tile(r[:, k], (len(X.columns), 1)).T * X
-                sum_rx = np.sum(rx, axis=0)
-                centroids[k] = sum_rx / denominator[k]
+            models.append(centroids)
+            scores.append(euclidean_distortion(X, self.predict(X, centroids=centroids)))
+            print(f"{l} iterations done, {10-l} remaining")
+        
+        print("Training done, selecting best centroids")
+        self.centroids = models[np.argmin(np.array(scores))]
 
-        self.centroids = centroids
-
-    def predict(self, X):
+    def predict(self, X, centroids=None):
         """
         Generates predictions
 
@@ -68,13 +86,16 @@ class KMeans:
             there are 3 clusters, then a possible assignment
             could be: array([2, 0, 0, 1, 2, 1, 1, 0, 2, 2])
         """
-
+        if centroids is not None:
+            c = centroids
+        else:
+            c = self.centroids
         result = []
         for i, x in X.iterrows():
             argmin = 0
             dist = np.inf
             for k in range(self.k):
-                distance = euclidean_distance(x, self.centroids[k])
+                distance = euclidean_distance(x, c[k])
                 if distance < dist:
                     argmin = k
                     dist = distance
